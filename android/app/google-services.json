@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "558029745257",
+    "project_id": "nfc-reader-ucb",
+    "storage_bucket": "nfc-reader-ucb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558029745257:android:3cfead6ed7249d78ca86f8",
+        "android_client_info": {
+          "package_name": "com.example.nfc_reader"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBciW9UwGV5J_bwzndTkqlc3H9dPtlW2Hg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
