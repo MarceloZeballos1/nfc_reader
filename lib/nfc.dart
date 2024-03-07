@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
@@ -13,6 +14,7 @@ class _NFCScreenState extends State<NFCScreen> {
 
   String nfcData = 'Acerque la tarjeta para leer la información';
   int decimalId = 0;
+  dynamic _userData;
 
   @override
   void initState() {
@@ -45,8 +47,12 @@ class _NFCScreenState extends State<NFCScreen> {
         int decimalId = int.parse(hexId, radix: 16);
 
         setState(() {
-          nfcData = 'La info de la maldita tarjeta es:\nDecimal: $decimalId \nHexadecimal: $hexId';
+          nfcData = 'La info de la tarjeta es:\nDecimal: $decimalId \nHexadecimal: $hexId';
         });
+
+        if (nfcData != null) {
+        _usersData(decimalId);
+        }
 
         // Your logic after reading the tag (optional)
         // ...
@@ -56,6 +62,26 @@ class _NFCScreenState extends State<NFCScreen> {
       setState(() {
         nfcData = 'Error al leer la tarjeta NFC: $e';
       });
+    }
+  }
+
+  Future<void> _usersData(int decimalId) async {
+    try {
+      final Dio dio = Dio();
+
+      final response = await dio.post('http://172.22.35.78:3000/api/cards',
+      data: {'cardId': decimalId},
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = response.data;
+        final userData = data;
+        setState(() {
+          _userData = userData;
+        });
+      }
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -86,6 +112,8 @@ class _NFCScreenState extends State<NFCScreen> {
               },
               child: Text("Cerrar Sesión"),
             ),
+            SizedBox(height: 20),
+            Text('Datos: $_userData'),
           ],
         ),
       ),

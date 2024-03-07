@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart';
+import 'package:nfc_reader/nfc.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final Dio dio = Dio(); // Create a Dio instance
 
       final response = await dio.post(
-        'https://nfc.api.dev.404.codes/api/auth',
+        'http://172.22.35.78:3000/api/auth',
         data: {'userName': userName, 'password': password},
       );
 
@@ -37,30 +38,20 @@ class _LoginScreenState extends State<LoginScreen> {
         _fetchAndDisplayUsers();
         }
         
-        /*Navigator.push(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => NFCScreen()),
-        );*/
+        );
 
       } else {
         // Handle login error gracefully
         print("Login error: ${response.statusCode}");
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Login failed. Please check your credentials."),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Text("Credenciales incorrectas"),
           ),
         );
       }
-    } on DioException catch (error) {
-      // Handle network errors
-      print("Network error: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Algo pasó. Por favor revisa tu conexión a internet."),
-          backgroundColor: Colors.red,
-        ),
-      );
     } catch (error) {
       // Handle unexpected errors
       print("Unexpected error: $error");
@@ -76,28 +67,29 @@ class _LoginScreenState extends State<LoginScreen> {
 /////////////////////////////////////////////////////////////////////////
 
   Future<void> _fetchAndDisplayUsers() async {
-  try {
-    final Dio dio = Dio();
-    dio.options.headers['Authorization'] = 'Bearer $_token';
+    try {
+      final Dio dio = Dio();
+      dio.options.headers['Authorization'] = 'Bearer $_token';
 
-    final response = await dio.get('https://nfc.api.dev.404.codes/api/users');
+      final response = await dio.get('http://172.22.35.78:3000/api/cards');
 
-    if (response.statusCode == 200) {
-      final List<dynamic> usersData = response.data as List<dynamic>;
-      final List<String> users = usersData.map((users) => jsonEncode(users)).toList();
+      if (response.statusCode == 200) {
+        final List<dynamic> usersData = response.data as List<dynamic>;
+        final List<String> users = usersData.map((users) => jsonEncode(users)).toList();
 
-      // Update the UI to display the list of users
-      setState(() {
-        userListWidget = users.join('\n'); // For debugging purposes
-        _allUserData = users; // Store all user data as JSON strings
-      });
-    } else {
-      // Handle error fetching users
+        // Update the UI to display the list of users
+        setState(() {
+          userListWidget = users.join('\n'); // For debugging purposes
+          _allUserData = users; // Store all user data as JSON strings
+        });
+      } else {
+        // Handle error fetching users
+      }
+    } catch (error) {
+      // Handle network or other errors
     }
-  } catch (error) {
-    // Handle network or other errors
   }
-}
+
 
   @override
   Widget build(BuildContext context) {
@@ -112,12 +104,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+
                 TextFormField(
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Usuario",
                   ),
+
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Ingrese su Usuario";
@@ -130,13 +124,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     });
                   },
                 ),
+
                 const SizedBox(height: 20),
                 TextFormField(
+                
                   obscureText: true,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Contraseña",
                   ),
+
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Ingrese su Contraseña";
@@ -149,6 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     });
                   },
                 ),
+
                 const SizedBox(height: 20),
                 
                 ElevatedButton(
