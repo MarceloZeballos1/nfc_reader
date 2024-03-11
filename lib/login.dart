@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http; // Use http for potential future usage
 import 'package:nfc_reader/nfc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -9,69 +9,83 @@ class LoginScreen extends StatefulWidget {
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
+
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _userNameController = TextEditingController();
+  final _passwordController = TextEditingController();
   String userName = "";
   String password = "";
   dynamic _token;
-  dynamic userListWidget; // For debugging purposes
+  dynamic userList;   
   List<dynamic>? _allUserData;
+  String errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.clear();
+  }
   
   Future<void> _handleLogin() async {
-    try {
-      final Dio dio = Dio(); // Create a Dio instance
+    final _form = _formKey.currentState!;// Access FormState
+    if (_form.validate()) { // Validate form before network call
+      _form.save(); // Save form values after validation
 
-      final response = await dio.post(
-        'http://172.22.35.78:3000/api/auth',
-        data: {'userName': userName, 'password': password},
-      );
+      try {
+        final Dio dio = Dio(); // Create a Dio instance
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = response.data;
-        final token = data['token']['token'];
-        setState(() {
-          _token = token;
-        });
-
-        if (_token != null) {
-        _fetchAndDisplayUsers();
-        }
-        
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => NFCScreen()),
+        final response = await dio.post(
+          'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/auth',
+          data: {'userName': userName, 'password': password},
         );
 
-      } else {
-        // Handle login error gracefully
-        print("Login error: ${response.statusCode}");
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = response.data;
+          final token = data['token']['token'];
+          setState(() {
+            _token = token;
+          });
+
+          if (_token != null) {
+            _fetchAndDisplayUsers();
+          }
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NFCScreen()),);
+
+        } else {
+          if (response.statusCode == 400) {
+          errorMessage = "Usuario o contraseña incorrectos";
+          } else {
+          errorMessage = "Error de conexión con el servidor";
+          }
+          print("Login error: ${response.statusCode}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+            ),
+          );
+        }
+      } catch (error) {
+        
+        print("Unexpected error: $error");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Credenciales incorrectas"),
+          const SnackBar(
+            content: Text("Error de conexión con el servidor."),
+            backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (error) {
-      // Handle unexpected errors
-      print("Unexpected error: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("An unexpected error occurred."),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
-  
-/////////////////////////////////////////////////////////////////////////
 
   Future<void> _fetchAndDisplayUsers() async {
     try {
       final Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $_token';
 
-      final response = await dio.get('http://172.22.35.78:3000/api/cards');
+      final response = await dio.get('https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards');
 
       if (response.statusCode == 200) {
         final List<dynamic> usersData = response.data as List<dynamic>;
@@ -79,97 +93,141 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Update the UI to display the list of users
         setState(() {
-          userListWidget = users.join('\n'); // For debugging purposes
+          userList = users.join('\n'); // For debugging purposes
           _allUserData = users; // Store all user data as JSON strings
         });
       } else {
-        // Handle error fetching users
+        //
       }
     } catch (error) {
       // Handle network or other errors
     }
   }
 
+  //////________________________________
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Iniciar Sesión"),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                TextFormField(
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Usuario",
-                  ),
-
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Ingrese su Usuario";
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      userName = value;
-                    });
-                  },
-                ),
-
-                const SizedBox(height: 20),
-                TextFormField(
-                
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Contraseña",
-                  ),
-
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Ingrese su Contraseña";
-                    }
-                    return null;
-                  },
-                  onChanged: (value) {
-                    setState(() {
-                      password = value;
-                    });
-                  },
-                ),
-
-                const SizedBox(height: 20),
-                
-                ElevatedButton(
-                  onPressed: _handleLogin,
-                  child: const Text("Iniciar Sesión"),
-                ),
-                const SizedBox(height: 20),
-
-                Text(
-                  "El token es: $_token",
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-                const SizedBox(height: 20),
-                
-                Text(
-                  "Lista: $_allUserData",
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-              ],
+      backgroundColor: const Color.fromARGB(255, 2, 156, 177), // Allow background image to show through
+      body: Stack(
+        children: [
+          /*Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('/assets/white.jpeg'), // Replace with your image path
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
+          ),*/
+          Center(
+            child: SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(left: 35, right: 35),
+                        child: Column(
+                          children: [
+                            const Text(
+                              'UCB',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 33,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Text(
+                              'CARDS',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 33,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 35),
+                            TextFormField(
+                              style: const TextStyle(color: Colors.black),
+                              controller: _userNameController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                fillColor: Colors.grey.shade100,
+                                filled: true,
+                                hintText: 'Usuario',
+                                hintStyle: const TextStyle(color: Colors.black54),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese su usuario';
+                                }
+                                return null;
+                              },
+                              onChanged: (value) => setState(() => userName = value),
+                            ),
+                            const SizedBox(height: 30),
+                            TextFormField(
+                              style: const TextStyle(),
+                              controller: _passwordController,
+                              obscureText: true,
+                              decoration: InputDecoration(
+                                fillColor: Colors.grey.shade100,
+                                filled: true,
+                                hintText: 'Contraseña',
+                                hintStyle: const TextStyle(color: Colors.black54),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor ingrese su contraseña';
+                                }
+                                return null;
+                              },
+                              onChanged: (value) => setState(() => password = value),
+                            ),
+                            const SizedBox(height: 40),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 27,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: const Color.fromARGB(255, 76, 76, 76),
+                                  child: IconButton(
+                                    color: Colors.white,
+                                    onPressed: _handleLogin,
+                                    icon: const Icon(Icons.arrow_forward),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 40),
+                         ],
+                       ),
+                     ),
+                   ],
+                 ),
+               ),
+             ),
+           ),
+         ),
+       ],
+     ),
+   );
+ }
 }

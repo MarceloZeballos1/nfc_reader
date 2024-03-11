@@ -29,7 +29,6 @@ class MainApp extends StatelessWidget {
         '/home': (context) => LoginScreen(), // Pantalla de inicio de sesión
         '/nfc': (context) => NFCScreen(), // Pantalla NFC
         '/login': (context) => LoginScreen(), // Pantalla Login
-        '/SingUp': (context) => LoginScreen(), // Pantalla SingUp
       },
     );
   }
