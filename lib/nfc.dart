@@ -4,10 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:nfc_reader/login.dart';
 import 'package:nfc_reader/userData.dart';
+import 'variables.dart';
+
 
 class NFCScreen extends StatefulWidget {
+  final String token;
+  const NFCScreen({Key? key, required this.token}) : super(key: key);
+
   @override
   _NFCScreenState createState() => _NFCScreenState();
+
 }
 
 class _NFCScreenState extends State<NFCScreen> {
@@ -22,6 +28,8 @@ class _NFCScreenState extends State<NFCScreen> {
   dynamic _email = '';
   dynamic _celular = 0;
   dynamic _tipo = '';
+  dynamic token;
+  List<dynamic>? _allUserData;
   
 
   @override
@@ -33,6 +41,8 @@ class _NFCScreenState extends State<NFCScreen> {
   Future<void> _readNFCData() async {
     try {
       // Check NFC availability first
+      
+
       var availability = await FlutterNfcKit.nfcAvailability;
       if (availability != NFCAvailability.available) {
         setState(() {
@@ -77,6 +87,7 @@ class _NFCScreenState extends State<NFCScreen> {
   Future<void> _usersData(int decimalId) async {
     try {
       final Dio dio = Dio();
+      dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
 
       final response = await dio.post('https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards',
       data: {'cardId': decimalId},

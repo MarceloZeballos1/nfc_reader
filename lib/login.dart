@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http; // Use http for potential future usage
 import 'package:nfc_reader/nfc.dart';
+import 'variables.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,11 +25,21 @@ class _LoginScreenState extends State<LoginScreen> {
   List<dynamic>? _allUserData;
   String errorMessage = '';
 
+
   @override
   void initState() {
     super.initState();
     _passwordController.clear();
   }
+
+  void navigateToNFCScreen(BuildContext context, String token) {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => NFCScreen(token: _token), // Pasar el token como argumento
+    ),
+  );
+}
   
   Future<void> _handleLogin() async {
     final _form = _formKey.currentState!;// Access FormState
@@ -38,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final Dio dio = Dio(); // Create a Dio instance
 
         final response = await dio.post(
-          'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/auth',
+          'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/auth/login',
           data: {'userName': userName, 'password': password},
         );
 
@@ -51,12 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (_token != null) {
             _fetchAndDisplayUsers();
+            navigateToNFCScreen(context, _token);
           }
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => NFCScreen()),);
 
         } else {
-          if (response.statusCode == 400) {
-          errorMessage = "Usuario o contraseña incorrectos";
+          if (response.statusCode == 401) {
+          errorMessage = "Contraseña incorrectos";
+          } else if (response.statusCode == 402) {
+          errorMessage = "Usuario no encontrado";
           } else {
           errorMessage = "Error de conexión con el servidor";
           }
@@ -86,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
       dio.options.headers['Authorization'] = 'Bearer $_token';
 
       final response = await dio.get('https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards');
-
+      
       if (response.statusCode == 200) {
         final List<dynamic> usersData = response.data as List<dynamic>;
         final List<String> users = usersData.map((users) => jsonEncode(users)).toList();
@@ -96,7 +110,13 @@ class _LoginScreenState extends State<LoginScreen> {
           userList = users.join('\n'); // For debugging purposes
           _allUserData = users; // Store all user data as JSON strings
         });
-      } else {
+      } else if (response.statusCode == 402) {
+          errorMessage = "Usuario no encontrado";
+          }
+          else if (response.statusCode == 401) {
+          errorMessage = "Contraseña incorrecta";
+          }
+      else {
         //
       }
     } catch (error) {

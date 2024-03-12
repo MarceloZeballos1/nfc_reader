@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Future.delayed(const Duration(seconds: 5));
@@ -27,7 +28,7 @@ class MainApp extends StatelessWidget {
       initialRoute: '/home',
       routes: {
         '/home': (context) => LoginScreen(), // Pantalla de inicio de sesión
-        '/nfc': (context) => NFCScreen(), // Pantalla NFC
+        '/nfc': (context) => NFCScreen(token: '',), // Pantalla NFC
         '/login': (context) => LoginScreen(), // Pantalla Login
       },
     );
