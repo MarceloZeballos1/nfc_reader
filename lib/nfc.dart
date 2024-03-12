@@ -46,14 +46,14 @@ class _NFCScreenState extends State<NFCScreen> {
       var availability = await FlutterNfcKit.nfcAvailability;
       if (availability != NFCAvailability.available) {
         setState(() {
-          nfcData = 'NFC no disponible';
+          nfcData = 'Dispositivo no compatible con NFC';
         });
         return;
       }
    
       // Continuously poll for NFC tags
       while (mounted) {
-        NFCTag? tag = await FlutterNfcKit.poll(timeout: Duration(hours: 168));
+        NFCTag? tag = await FlutterNfcKit.poll(timeout: const Duration(hours: 168));
         
         if (tag == null) {
           setState(() {
@@ -120,51 +120,102 @@ class _NFCScreenState extends State<NFCScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lector NFC'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Acerque la tarjeta para leer la información'),
-            SizedBox(height: 20),
-            Text(nfcData),
-            SizedBox(height: 20),
-            /*ElevatedButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => UserData(),
-                ));
-              },
-              child: Text("Pantalla Usuarios"),
-            ),*/
-            SizedBox(height: 20),
+
+    return Container(
+      child: Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+            Text(
+              nfcData,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+            const SizedBox(height: 120),
+            
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image:AssetImage('/assets/ucb.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 120),
+            Text(
+              'Marcelo Santiago Zeballos Murillo', //$_nombre
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'CI: 12738042', //$_ci
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'marcelo.zeballos@ucb.edu.bo', //$_email
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '65250236', //$_celular
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ), 
+            const SizedBox(height: 10),
+            Text(
+              'Grupo: $_tipo',
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Fecha de Expiración: $_fechaExpiracion',
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+              ),
+            ),            
+            const SizedBox(height: 70),
             ElevatedButton(
               onPressed: () async {
                 _auth.signOut();
                 Navigator.of(context).popUntil((route) => route.isFirst);
                 
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()),);
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()),);
               },
-              child: Text("Cerrar Sesión"),
+              child: const Text("Cerrar Sesión"),
             ),
-            SizedBox(height: 20),
-            Text(_nombre),
-            SizedBox(height: 20),
-            Text('CI: $_ci'),
-            SizedBox(height: 20),
-            Text('Correo: $_email'),
-            SizedBox(height: 20),
-            Text('Celular: $_celular'),
-            SizedBox(height: 20),
-            Text('Fecha de Expiración: $_fechaExpiracion'),
-            SizedBox(height: 20),
-            Text('Grupo: $_tipo'),
+            const SizedBox(height: 80),
           ],
+          ),
         ),
       ),
-    ); 
+    );
   }
 }

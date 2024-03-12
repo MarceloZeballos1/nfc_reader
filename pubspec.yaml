@@ -28,6 +28,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png
+    - assets/white.jpeg
+    - assets/ucb.jpg
+
+
 
 flutter_native_splash:
   android: true
