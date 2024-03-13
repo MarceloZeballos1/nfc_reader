@@ -2,16 +2,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http; // Use http for potential future usage
+import 'package:nfc_reader/home.dart';
 import 'package:nfc_reader/nfc.dart';
 import 'variables.dart';
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
-
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -21,10 +20,9 @@ class _LoginScreenState extends State<LoginScreen> {
   String userName = "";
   String password = "";
   dynamic _token;
-  dynamic userList;   
+  dynamic userList;
   List<dynamic>? _allUserData;
   String errorMessage = '';
-
 
   @override
   void initState() {
@@ -32,18 +30,19 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.clear();
   }
 
-  void navigateToNFCScreen(BuildContext context, String token) {
+  void navigateToHomeScreen(BuildContext context, String token) {
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(
-      builder: (context) => NFCScreen(token: _token), // Pasar el token como argumento
+      builder: (context) => HomeScreen(token: token), // Pass token as argument
     ),
   );
 }
-  
+
   Future<void> _handleLogin() async {
-    final _form = _formKey.currentState!;// Access FormState
-    if (_form.validate()) { // Validate form before network call
+    final _form = _formKey.currentState!; // Access FormState
+    if (_form.validate()) {
+      // Validate form before network call
       _form.save(); // Save form values after validation
 
       try {
@@ -63,16 +62,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (_token != null) {
             _fetchAndDisplayUsers();
-            navigateToNFCScreen(context, _token);
+            navigateToHomeScreen(context, _token);
           }
-
         } else {
           if (response.statusCode == 401) {
-          errorMessage = "Contraseña incorrectos";
+            errorMessage = "Contraseña incorrectos";
           } else if (response.statusCode == 402) {
-          errorMessage = "Usuario no encontrado";
+            errorMessage = "Usuario no encontrado";
           } else {
-          errorMessage = "Error de conexión con el servidor";
+            errorMessage = "Error de conexión con el servidor";
           }
           print("Login error: ${response.statusCode}");
           ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } catch (error) {
-        
         print("Unexpected error: $error");
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -99,11 +96,13 @@ class _LoginScreenState extends State<LoginScreen> {
       final Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $_token';
 
-      final response = await dio.get('https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards');
-      
+      final response = await dio.get(
+          'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards');
+
       if (response.statusCode == 200) {
         final List<dynamic> usersData = response.data as List<dynamic>;
-        final List<String> users = usersData.map((users) => jsonEncode(users)).toList();
+        final List<String> users =
+            usersData.map((users) => jsonEncode(users)).toList();
 
         // Update the UI to display the list of users
         setState(() {
@@ -111,12 +110,10 @@ class _LoginScreenState extends State<LoginScreen> {
           _allUserData = users; // Store all user data as JSON strings
         });
       } else if (response.statusCode == 402) {
-          errorMessage = "Usuario no encontrado";
-          }
-          else if (response.statusCode == 401) {
-          errorMessage = "Contraseña incorrecta";
-          }
-      else {
+        errorMessage = "Usuario no encontrado";
+      } else if (response.statusCode == 401) {
+        errorMessage = "Contraseña incorrecta";
+      } else {
         //
       }
     } catch (error) {
@@ -129,7 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 156, 177), // Allow background image to show through
+      backgroundColor: const Color.fromARGB(
+          255, 2, 156, 177), // Allow background image to show through
       body: Stack(
         children: [
           /*Container(
@@ -143,7 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
           Center(
             child: SingleChildScrollView(
               child: Container(
-                padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.05),
+                padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).size.height * 0.05),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -178,7 +177,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fillColor: Colors.grey.shade100,
                                 filled: true,
                                 hintText: 'Usuario',
-                                hintStyle: const TextStyle(color: Colors.black54),
+                                hintStyle:
+                                    const TextStyle(color: Colors.black54),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -189,7 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                                 return null;
                               },
-                              onChanged: (value) => setState(() => userName = value),
+                              onChanged: (value) =>
+                                  setState(() => userName = value),
                             ),
                             const SizedBox(height: 30),
                             TextFormField(
@@ -200,7 +201,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fillColor: Colors.grey.shade100,
                                 filled: true,
                                 hintText: 'Contraseña',
-                                hintStyle: const TextStyle(color: Colors.black54),
+                                hintStyle:
+                                    const TextStyle(color: Colors.black54),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -211,7 +213,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                                 return null;
                               },
-                              onChanged: (value) => setState(() => password = value),
+                              onChanged: (value) =>
+                                  setState(() => password = value),
                             ),
                             const SizedBox(height: 40),
                             Row(
@@ -227,7 +230,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 CircleAvatar(
                                   radius: 30,
-                                  backgroundColor: const Color.fromARGB(255, 76, 76, 76),
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 76, 76, 76),
                                   child: IconButton(
                                     color: Colors.white,
                                     onPressed: _handleLogin,
@@ -237,17 +241,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                             const SizedBox(height: 40),
-                         ],
-                       ),
-                     ),
-                   ],
-                 ),
-               ),
-             ),
-           ),
-         ),
-       ],
-     ),
-   );
- }
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -5,15 +5,15 @@ import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'package:nfc_reader/login.dart';
 import 'variables.dart';
 
-class NFCScreen extends StatefulWidget {
+class RegistroScreen extends StatefulWidget {
   final String token;
-  const NFCScreen({Key? key, required this.token}) : super(key: key);
+  const RegistroScreen({Key? key, required this.token}) : super(key: key);
 
   @override
-  _NFCScreenState createState() => _NFCScreenState();
+  _RegistroScreen createState() => _RegistroScreen();
 }
 
-class _NFCScreenState extends State<NFCScreen> {
+class _RegistroScreen extends State<RegistroScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   String nfcData = 'Acerque la tarjeta para leer la información';
@@ -119,7 +119,7 @@ class _NFCScreenState extends State<NFCScreen> {
       backgroundColor: const Color.fromARGB(255, 2, 156, 177),
       body: Stack(
         children: [
-          
+          // Card for information
           Center(
             child: Card(
               margin: const EdgeInsets.all(30),
@@ -133,8 +133,9 @@ class _NFCScreenState extends State<NFCScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Label for "tipo" in the top right corner
                     Container(
-                      alignment: Alignment.center,
+                      alignment: Alignment.topRight,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade100,
@@ -143,25 +144,20 @@ class _NFCScreenState extends State<NFCScreen> {
                       child: Text(
                         '$_tipo', //Grupo: $_tipo
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 35),
+                    const SizedBox(height: 20),
                     // Rest of the user information
-                    /*Text(
+                    Text(
                       'UCB \nCARDS',
                       style: TextStyle(
                         color: Color.fromARGB(255, 2, 156, 177),
                         fontSize: 33,
                         fontWeight: FontWeight.bold,
                       ),
-                    ),
-                    const SizedBox(height: 35),*/
-                    Center(
-                      child: Image.asset("assets/iconCard.png", height: 90,),
                     ),
                     const SizedBox(height: 35),
                     Text(

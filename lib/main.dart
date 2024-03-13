@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nfc_reader/home.dart';
 import 'package:nfc_reader/login.dart';
+import 'package:nfc_reader/registro.dart';
 import 'nfc.dart'; 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -25,11 +27,12 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/home',
+      initialRoute: '/login',
       routes: {
-        '/home': (context) => LoginScreen(), // Pantalla de inicio de sesión
+        '/home': (context) => HomeScreen(token: '',), // Pantalla de inicio de sesión
         '/nfc': (context) => NFCScreen(token: '',), // Pantalla NFC
         '/login': (context) => LoginScreen(), // Pantalla Login
+        '/register': (context) => RegistroScreen(token: ''),
       },
     );
   }

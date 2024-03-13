@@ -32,7 +32,8 @@ flutter:
     - assets/logo.png
     - assets/white.jpeg
     - assets/ucb.jpg
-
+    - assets/iconCard.png
+    - assets/iconCard.jpg
 
 
 flutter_native_splash:
