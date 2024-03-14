@@ -29,8 +29,8 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/login',
       routes: {
-        '/home': (context) => HomeScreen(token: '',), // Pantalla de inicio de sesión
-        '/nfc': (context) => NFCScreen(token: '',), // Pantalla NFC
+        '/home': (context) => HomeScreen(token: '', idUser: 0,), // Pantalla de inicio de sesión
+        '/nfc': (context) => NFCScreen(token: '', idUser: 0), // Pantalla NFC
         '/login': (context) => LoginScreen(), // Pantalla Login
         '/register': (context) => RegistroScreen(token: ''),
       },

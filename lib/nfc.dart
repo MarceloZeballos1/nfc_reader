@@ -7,7 +7,10 @@ import 'variables.dart';
 
 class NFCScreen extends StatefulWidget {
   final String token;
-  const NFCScreen({Key? key, required this.token}) : super(key: key);
+  final int idUser;
+
+  const NFCScreen({Key? key, required this.token, required this.idUser})
+      : super(key: key);
 
   @override
   _NFCScreenState createState() => _NFCScreenState();
@@ -18,6 +21,10 @@ class _NFCScreenState extends State<NFCScreen> {
 
   String nfcData = 'Acerque la tarjeta para leer la información';
   int decimalId = 0;
+  dynamic idUser;
+  int idParty = 1;
+  dynamic contador = 0;
+  //Primer request
   dynamic _userData;
   String _nombre = '';
   dynamic _ci = 0;
@@ -25,12 +32,24 @@ class _NFCScreenState extends State<NFCScreen> {
   dynamic _email = '';
   dynamic _celular = 0;
   dynamic _tipo = '';
+  //Segundo request
+  dynamic _idUser = 0;
+  dynamic _idParty = 0;
+  dynamic _available = 0;
+  dynamic _createdAt = '';
+  dynamic _updatedAt = '';
+  //BOTON request manilla
+  dynamic _status;
+  String _comprobacion = '';
+
+  dynamic _error = '';
   dynamic token;
   List<dynamic>? _allUserData;
 
   @override
   void initState() {
     super.initState();
+    _counter(widget.idUser);
     _readNFCData();
   }
 
@@ -60,10 +79,11 @@ class _NFCScreenState extends State<NFCScreen> {
         String hexId = tag.id;
         int decimalId = int.parse(hexId, radix: 16);
 
-        setState(() {
-          nfcData = 'La info de la tarjeta es:\nDecimal: $decimalId';
+        /*setState(() {
+          nfcData = 'La info de la tarjeta es:\nID: $decimalId';
           //nfcData = 'La info de la tarjeta es:\nDecimal: $decimalId \nHexadecimal: $hexId';
         });
+        */
 
         if (nfcData != null) {
           _usersData(decimalId);
@@ -74,8 +94,57 @@ class _NFCScreenState extends State<NFCScreen> {
       }
     } catch (e) {
       setState(() {
-        nfcData = 'La sesión expiró, vuelva a iniciar sesión por favor';
+        nfcData = 'La sesión expiró, inicie sesión nuevamente';
       });
+    }
+  }
+
+  Future<void> _counter(idUser) async {
+    try {
+      final Dio dio = Dio();
+      dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
+
+      final response = await dio.get(
+        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/wristbands/${widget.idUser}',
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = response.data;
+        final idUser = data['idUser'];
+        final idParty = data['idParty'];
+        final available = data['available'];
+        final createdAt = data['createdAt'];
+        final updateAt = data['updateAt'];
+        setState(() {
+          _idUser = idUser;
+          _idParty = idParty;
+          _available = available;
+          _createdAt = createdAt;
+          _updatedAt = updateAt;
+        });
+      } else if (response.statusCode == 404) {
+        setState(() {
+          nfcData = 'Usuario no encontrado';
+        });
+      } else if (response.statusCode == 401) {
+        final Map<String, dynamic> data = response.data;
+        final error = data['error'];
+        setState(() {
+          _error = error;
+          nfcData = _error;
+        });
+      } else if (response.statusCode == 500) {
+        final Map<String, dynamic> data = response.data;
+        final error = data['error'];
+        setState(() {
+          _error = error;
+          nfcData = _error;
+        });
+      }
+
+      print(response.data);
+    } catch (error) {
+      print(error);
     }
   }
 
@@ -86,7 +155,9 @@ class _NFCScreenState extends State<NFCScreen> {
 
       final response = await dio.post(
         'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards',
-        data: {'cardId': decimalId},
+        data: {
+          'cardId': decimalId,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -107,9 +178,57 @@ class _NFCScreenState extends State<NFCScreen> {
           _celular = celular;
           _tipo = tipo;
         });
+      } else if (response.statusCode == 500) {
+        final Map<String, dynamic> data = response.data;
+        final error = data['error'];
+        setState(() {
+          _error = error;
+          nfcData = _error;
+        });
+      } else if (response.statusCode == 401) {
+        final Map<String, dynamic> data = response.data;
+        final error = data['error'];
+        setState(() {
+          _error = error;
+          nfcData = _error;
+        });
       }
     } catch (error) {
       print(error);
+    }
+  }
+
+  Future<void> _userRegister(
+      int idPersona, String nombre, int idUser, int idParty) async {
+    try {
+      final Dio dio = Dio();
+      dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
+
+      final response = await dio.post(
+        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards/add/',
+        data: {
+          'idPersona': idPersona,
+          'nombre': nombre,
+          'idUser': widget.idUser,
+          'idParty': idParty
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = response.data;
+        final status = data['status'];
+
+        setState(() {
+          _status = status;
+          if (_status == 0) {
+            _comprobacion = 'Se registró correctamente al estudiante';
+          } else if (_status == 1) {
+            _comprobacion = 'El estudiante ya cuenta con una manilla';
+          }
+        });
+      }
+    } catch (_status) {
+      print('ERORRRRRRRRRRRRRRRRRRRRRRRRR $_status');
     }
   }
 
@@ -119,7 +238,6 @@ class _NFCScreenState extends State<NFCScreen> {
       backgroundColor: const Color.fromARGB(255, 2, 156, 177),
       body: Stack(
         children: [
-          
           Center(
             child: Card(
               margin: const EdgeInsets.all(30),
@@ -131,8 +249,51 @@ class _NFCScreenState extends State<NFCScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(25),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    const Center(
+                      child: Text(
+                        'Manillas Catolicazo', //Grupo: $_tipo
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 35),
+                    Center(
+                      child: Image.asset(
+                        "assets/iconCard.png",
+                        height: 90,
+                      ),
+                    ),
+                    /*
+                    const Text(
+                      'UCB \nCARDS',
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 2, 156, 177),
+                        fontSize: 33,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    */
+                    const SizedBox(height: 35),
+                    Text(
+                      '$_nombre', // $_nombre
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'CI: $_ci', // CI: $_ci
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(8),
@@ -143,51 +304,76 @@ class _NFCScreenState extends State<NFCScreen> {
                       child: Text(
                         '$_tipo', //Grupo: $_tipo
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 20,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 35),
-                    // Rest of the user information
-                    /*Text(
-                      'UCB \nCARDS',
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 2, 156, 177),
-                        fontSize: 33,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 10),
+                    Text(
+                      'Manillas Disponibles: $_available', //Contador
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 35),*/
+                    const SizedBox(height: 10),
+                    Text(
+                      nfcData, //Mostrar error o estado
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _comprobacion, //Mostrar error o estado
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Center(
-                      child: Image.asset("assets/iconCard.png", height: 90,),
-                    ),
-                    const SizedBox(height: 35),
-                    Text(
-                      '$_nombre', // $_nombre
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
+                      child: TextButton(
+                        onPressed: () async {
+                          _userRegister;
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 2, 156, 177),
+                          // Adjust padding and text size as needed
+                        ),
+                        child: const Text(
+                          'Registrar Entrega',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'CI: $_ci', // CI: $_ci
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
+                    const SizedBox(height: 20),
+                    Center(
+                      child: TextButton(
+                        onPressed: () async {
+                          _auth.signOut();
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 2, 156, 177),
+                          // Adjust padding and text size as needed
+                        ),
+                        child: const Text(
+                          'Cerrar Sesión',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '$_email', //$_email
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
+
                     /*const SizedBox(height: 10),
                         Text(
                           '65250236', //$_celular
@@ -216,28 +402,6 @@ class _NFCScreenState extends State<NFCScreen> {
                           ),
                         ),
                         */
-                    const SizedBox(height: 30),
-                    TextButton(
-                      onPressed: () async {
-                        _auth.signOut();
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 2, 156, 177),
-                        // Adjust padding and text size as needed
-                      ),
-                      child: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
                   ],
                 ),
               ),

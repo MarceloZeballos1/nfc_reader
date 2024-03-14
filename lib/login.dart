@@ -20,9 +20,12 @@ class _LoginScreenState extends State<LoginScreen> {
   String userName = "";
   String password = "";
   dynamic _token;
+  dynamic _idUser;
+  
   dynamic userList;
   List<dynamic>? _allUserData;
-  String errorMessage = '';
+  dynamic errorMessage = '';
+  dynamic _error = '';
 
   @override
   void initState() {
@@ -34,10 +37,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(
-      builder: (context) => HomeScreen(token: token), // Pass token as argument
+      builder: (context) => HomeScreen(token: token, idUser: _idUser),
     ),
   );
-}
+} 
 
   Future<void> _handleLogin() async {
     final _form = _formKey.currentState!; // Access FormState
@@ -54,24 +57,49 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (response.statusCode == 200) {
-          final Map<String, dynamic> data = response.data;
-          final token = data['token']['token'];
-          setState(() {
-            _token = token;
-          });
+        final Map<String, dynamic> data = response.data;
+        final token = data['token']['token'];
+        final idUser = data['token']['user']['id'];
+        //final idUser = data['token']['user']['id'];
+        setState(() {
+          _token = token;
+          _idUser = idUser;
+        });
 
-          if (_token != null) {
-            _fetchAndDisplayUsers();
-            navigateToHomeScreen(context, _token);
-          }
-        } else {
-          if (response.statusCode == 401) {
-            errorMessage = "Contraseña incorrectos";
-          } else if (response.statusCode == 402) {
-            errorMessage = "Usuario no encontrado";
-          } else {
-            errorMessage = "Error de conexión con el servidor";
-          }
+
+        if (_token != null) {
+          _fetchAndDisplayUsers();
+          navigateToHomeScreen(context, _token);
+        }
+      } else {
+        // Handle specific errors or a generic message
+        String errorMessage = "Error de conexión con el servidor";
+
+        if (response.statusCode == 401) {
+          final Map<String, dynamic> data = response.data;
+          final error = data['error'];
+          errorMessage = error ?? "Contraseña incorrecta"; // Use default if no error message provided
+          setState(() {
+            _error = errorMessage;
+          });
+        } else if (response.statusCode == 402) {
+          final Map<String, dynamic> data = response.data;
+          final error = data['error'];
+          errorMessage = error ?? "Usuario Incorrecto"; // Use default if no error message provided
+          setState(() {
+            _error = errorMessage;
+          });
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
+        {
           print("Login error: ${response.statusCode}");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -80,14 +108,15 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } catch (error) {
-        print("Unexpected error: $error");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Error de conexión con el servidor."),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      print("Login error: ${error}"); // Log the error for debugging
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_error),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
     }
   }
 
@@ -110,9 +139,9 @@ class _LoginScreenState extends State<LoginScreen> {
           _allUserData = users; // Store all user data as JSON strings
         });
       } else if (response.statusCode == 402) {
-        errorMessage = "Usuario no encontrado";
+        
       } else if (response.statusCode == 401) {
-        errorMessage = "Contraseña incorrecta";
+        
       } else {
         //
       }
@@ -152,6 +181,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         margin: const EdgeInsets.only(left: 35, right: 35),
                         child: Column(
                           children: [
+                            Center(
+                              child: Image.asset(
+                                "assets/logo.png",
+                                height: 120,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
                             const Text(
                               'UCB',
                               style: TextStyle(

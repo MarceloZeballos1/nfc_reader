@@ -25,8 +25,10 @@ class _RegistroScreen extends State<RegistroScreen> {
   dynamic _email = '';
   dynamic _celular = 0;
   dynamic _tipo = '';
+  dynamic _contador = 0;
   dynamic token;
   List<dynamic>? _allUserData;
+  
 
   @override
   void initState() {
@@ -97,6 +99,7 @@ class _RegistroScreen extends State<RegistroScreen> {
         final fechaExpiracion = data['fechaExpiracion'];
         final celular = data['celular'];
         final tipo = data['tipo'];
+        final contador = data['contador'];
         final userData = data;
         setState(() {
           _userData = userData;
@@ -106,6 +109,7 @@ class _RegistroScreen extends State<RegistroScreen> {
           _fechaExpiracion = fechaExpiracion;
           _celular = celular;
           _tipo = tipo;
+          _contador = contador;
         });
       }
     } catch (error) {
@@ -119,7 +123,6 @@ class _RegistroScreen extends State<RegistroScreen> {
       backgroundColor: const Color.fromARGB(255, 2, 156, 177),
       body: Stack(
         children: [
-          // Card for information
           Center(
             child: Card(
               margin: const EdgeInsets.all(30),
@@ -133,9 +136,8 @@ class _RegistroScreen extends State<RegistroScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Label for "tipo" in the top right corner
                     Container(
-                      alignment: Alignment.topRight,
+                      alignment: Alignment.center,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade100,
@@ -144,14 +146,21 @@ class _RegistroScreen extends State<RegistroScreen> {
                       child: Text(
                         '$_tipo', //Grupo: $_tipo
                         style: const TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    // Rest of the user information
-                    Text(
+                    const SizedBox(height: 35),
+                    Center(
+                      child: Image.asset(
+                        "assets/iconCard.png",
+                        height: 90,
+                      ),
+                    ),
+                    /*
+                    const Text(
                       'UCB \nCARDS',
                       style: TextStyle(
                         color: Color.fromARGB(255, 2, 156, 177),
@@ -159,6 +168,7 @@ class _RegistroScreen extends State<RegistroScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    */
                     const SizedBox(height: 35),
                     Text(
                       '$_nombre', // $_nombre
@@ -179,13 +189,20 @@ class _RegistroScreen extends State<RegistroScreen> {
                     Text(
                       '$_email', //$_email
                       style: const TextStyle(
-                        color: Colors.black,
                         fontSize: 17,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    /*const SizedBox(height: 10),
-                        Text(
+                    const SizedBox(height: 10),
+                    Text(
+                      'Manillas Restantes: 0', // $_contador
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    /*    Text(
                           '65250236', //$_celular
                           style: const TextStyle(
                             color: Colors.black,
@@ -213,29 +230,32 @@ class _RegistroScreen extends State<RegistroScreen> {
                         ),
                         */
                     const SizedBox(height: 30),
-                    TextButton(
-                      onPressed: () async {
-                        _auth.signOut();
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 2, 156, 177),
-                        // Adjust padding and text size as needed
-                      ),
-                      child: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(color: Colors.white),
+                    Center(
+                      child: TextButton(
+                        onPressed: () async {
+                          _auth.signOut();
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 2, 156, 177),
+                          // Adjust padding and text size as needed
+                        ),
+                        child: const Text(
+                          'Cerrar Sesión',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],
                 ),
+                
               ),
             ),
           ),
