@@ -87,6 +87,7 @@ class _NFCScreenState extends State<NFCScreen> {
 
         if (nfcData != null) {
           _usersData(decimalId);
+          
         }
 
         // Your logic after reading the tag (optional)
@@ -178,6 +179,7 @@ class _NFCScreenState extends State<NFCScreen> {
           _celular = celular;
           _tipo = tipo;
         });
+        print('1primero $_ci*********************');
       } else if (response.statusCode == 500) {
         final Map<String, dynamic> data = response.data;
         final error = data['error'];
@@ -199,33 +201,45 @@ class _NFCScreenState extends State<NFCScreen> {
   }
 
   Future<void> _userRegister(
-      int idPersona, String nombre, int idUser, int idParty) async {
+      dynamic idPersona, dynamic nombre, int idUser, int idParty) async {
     try {
       final Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
-
+      print(_nombre);
       final response = await dio.post(
-        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards/add/',
+        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards/add',
         data: {
-          'idPersona': idPersona,
-          'nombre': nombre,
+          'idPersona': _ci, // Usamos la información de _userData
+          'nombre': _nombre,
           'idUser': widget.idUser,
           'idParty': idParty
         },
       );
 
+      await _usersData(decimalId);
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = response.data;
-        final status = data['status'];
+        final int status = data['status'];
+
+        print('widget.idUser: ${widget.idUser}');
+        print('_ci: $_ci');
+        print('_nombre: $_nombre');
+        print('idParty: $idParty');
+        
+        if (status == 0) {
+          _comprobacion = 'Se registró correctamente al estudiante';
+        } else if (status == 1) {
+          _comprobacion = 'El estudiante ya cuenta con una manilla';
+        }
 
         setState(() {
           _status = status;
-          if (_status == 0) {
-            _comprobacion = 'Se registró correctamente al estudiante';
-          } else if (_status == 1) {
-            _comprobacion = 'El estudiante ya cuenta con una manilla';
-          }
+          _available = _available;
         });
+      } else {
+        // Maneja la recuperación fallida de datos del usuario (por ejemplo, muestra un mensaje de error)
+        print('Error al recuperar datos del usuario');
       }
     } catch (_status) {
       print('ERORRRRRRRRRRRRRRRRRRRRRRRRR $_status');
@@ -311,42 +325,34 @@ class _NFCScreenState extends State<NFCScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Manillas Disponibles: $_available', //Contador
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
                       nfcData, //Mostrar error o estado
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _comprobacion, //Mostrar error o estado
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
                     const SizedBox(height: 20),
                     Center(
-                      child: TextButton(
-                        onPressed: () async {
-                          _userRegister;
-                        },
-                        style: TextButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 2, 156, 177),
-                          // Adjust padding and text size as needed
-                        ),
-                        child: const Text(
-                          'Registrar Entrega',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                      child: Column(
+                        children: [
+                          TextButton(
+                            onPressed: () async {
+                              await _userRegister(
+                                  _ci, _nombre, widget.idUser, idParty);
+                              _counter(widget.idUser);
+                              setState(() {
+                                
+                              });
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: Color.fromARGB(255, 2, 156, 177),
+                            ),
+                            child: const Text(
+                              'Registrar Entrega',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -371,6 +377,24 @@ class _NFCScreenState extends State<NFCScreen> {
                           'Cerrar Sesión',
                           style: TextStyle(color: Colors.white),
                         ),
+                      ),
+                      
+                    ),
+                    const SizedBox(height: 10),
+                      Text(
+                        'Manillas Disponibles: $_available', //Contador
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    Text(
+                      _comprobacion, //Mostrar error o estado
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
 
