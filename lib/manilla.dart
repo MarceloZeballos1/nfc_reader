@@ -66,7 +66,7 @@ class _ManillaScreen extends State<ManillaScreen> {
         data: {
           'idPersona': _ci,
           'fullname': _nombre,
-          'idUser': '1', // Puedes cambiar esto si es dinámico
+          'idUser': '1', // Puedes cambiar esto si es dinámico.
         },
       );
 
