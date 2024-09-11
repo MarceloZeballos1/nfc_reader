@@ -87,7 +87,7 @@ class _RegistroScreen extends State<RegistroScreen> {
       dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
 
       final response = await dio.post(
-        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards',
+        'http://cardsapi.dev.dtt.tja.ucb.edu.bo/api/cards',
         data: {'cardId': decimalId},
       );
 

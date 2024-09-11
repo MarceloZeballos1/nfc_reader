@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nfc_reader/home.dart';
 import 'package:nfc_reader/login.dart';
+import 'package:nfc_reader/manilla.dart';
 import 'package:nfc_reader/registro.dart';
 import 'nfc.dart'; 
 import 'package:firebase_core/firebase_core.dart';
@@ -10,7 +11,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Future.delayed(const Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 2));
   FlutterNativeSplash.remove();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -27,12 +28,13 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/login',
+      initialRoute: '/manilla',
       routes: {
         '/home': (context) => HomeScreen(token: '', idUser: 0,), // Pantalla de inicio de sesión
         '/nfc': (context) => NFCScreen(token: '', idUser: 0), // Pantalla NFC
         '/login': (context) => LoginScreen(), // Pantalla Login
         '/register': (context) => RegistroScreen(token: ''),
+        '/manilla': (context) => ManillaScreen(token: ''),
       },
     );
   }

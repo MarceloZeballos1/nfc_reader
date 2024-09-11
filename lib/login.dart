@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final Dio dio = Dio(); // Create a Dio instance
 
         final response = await dio.post(
-          'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/auth/login',
+          'http://cardsapi.dev.dtt.tja.ucb.edu.bo/api/auth/login',
           data: {'userName': userName, 'password': password},
         );
 
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
       dio.options.headers['Authorization'] = 'Bearer $_token';
 
       final response = await dio.get(
-          'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards');
+          'http://cardsapi.dev.dtt.tja.ucb.edu.bo/api/cards');
 
       if (response.statusCode == 200) {
         final List<dynamic> usersData = response.data as List<dynamic>;

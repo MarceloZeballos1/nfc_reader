@@ -106,7 +106,7 @@ class _NFCScreenState extends State<NFCScreen> {
       dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
 
       final response = await dio.get(
-        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/wristbands/${widget.idUser}',
+        'http://cardsapi.dev.dtt.tja.ucb.edu.bo/${widget.idUser}',
       );
 
       if (response.statusCode == 200) {
@@ -155,7 +155,7 @@ class _NFCScreenState extends State<NFCScreen> {
       dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
 
       final response = await dio.post(
-        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards',
+        'http://cardsapi.dev.dtt.tja.ucb.edu.bo/api/cards',
         data: {
           'cardId': decimalId,
         },
@@ -207,7 +207,7 @@ class _NFCScreenState extends State<NFCScreen> {
       dio.options.headers['Authorization'] = 'Bearer ${widget.token}';
       print(_nombre);
       final response = await dio.post(
-        'https://clltzu4lo00aapmcgijm5df3y-keys-nfc.api.dev.404.codes/api/cards/add',
+        'http://cardsapi.dev.dtt.tja.ucb.edu.bo/api/cards/add',
         data: {
           'idPersona': _ci, // Usamos la información de _userData
           'nombre': _nombre,
